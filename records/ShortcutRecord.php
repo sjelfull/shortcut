@@ -30,10 +30,12 @@ class ShortcutRecord extends BaseRecord
     protected function defineAttributes ()
     {
         return [
-            'code'    => [ AttributeType::String, 'default' => '' ],
-            'url'     => [ AttributeType::String, 'default' => '' ],
-            'urlHash' => [ AttributeType::String, 'default' => '' ],
-            'hits'    => [ AttributeType::Number, 'default' => 0 ],
+            'elementType' => [ AttributeType::String, 'default' => null ],
+            'locale'      => [ AttributeType::Locale, 'default' => null ],
+            'code'        => [ AttributeType::String, 'default' => '' ],
+            'url'         => [ AttributeType::String, 'default' => '' ],
+            'urlHash'     => [ AttributeType::String, 'default' => '' ],
+            'hits'        => [ AttributeType::Number, 'default' => 0 ],
         ];
     }
 

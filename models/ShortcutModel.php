@@ -21,23 +21,38 @@ class ShortcutModel extends BaseModel
     protected function defineAttributes ()
     {
         return array_merge(parent::defineAttributes(), [
-            'id'        => [ AttributeType::Number, 'default' => null ],
-            'code'      => [ AttributeType::String, 'default' => '' ],
-            'url'       => [ AttributeType::String, 'default' => '' ],
-            'urlHash'   => [ AttributeType::String, 'default' => '' ],
-            'hits'      => [ AttributeType::Number, 'default' => 0 ],
-            'elementId' => [ AttributeType::Number, 'default' => null ],
+            'id'          => [ AttributeType::Number, 'default' => null ],
+            'code'        => [ AttributeType::String, 'default' => '' ],
+            'url'         => [ AttributeType::String, 'default' => '' ],
+            'urlHash'     => [ AttributeType::String, 'default' => '' ],
+            'hits'        => [ AttributeType::Number, 'default' => 0 ],
+            'elementId'   => [ AttributeType::Number, 'default' => null ],
+            'elementType' => [ AttributeType::String, 'default' => null ],
+            'locale'      => [ AttributeType::Locale, 'default' => null ],
         ]);
     }
 
     public function getUrl ()
     {
-        return UrlHelper::getSiteUrl('s/' . $this->getAttribute('code'));
+        $urlSegment = craft()->config->get('urlSegment', 'shortcut') ?: 's';
+
+        return UrlHelper::getSiteUrl($urlSegment . '/' . $this->getAttribute('code'));
     }
 
     public function getRealUrl ()
     {
-        return $this->getAttribute('url');
+        if ( !$this->elementId ) {
+            return $this->getAttribute('url');
+        }
+        else {
+            $element = craft()->elements->getElementById($this->elementId, $this->elementType, $this->locale);
+
+            if ( !$element ) {
+                throw new Exception(Craft::t('Could not find the url for element {id}', [ 'id' => $this->elementId ]));
+            }
+
+            return $element->getUrl();
+        }
     }
 
     public function redirect ()

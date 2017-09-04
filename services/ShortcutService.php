@@ -23,7 +23,7 @@ class ShortcutService extends BaseApplicationComponent
             $element = $options['element'];
 
             // Check if we have one
-            $shortcut = $this->getByElementId($element->id);
+            $shortcut = $this->getByElementId($element->id, $element->locale);
 
             // If not, create one
             if ( !$shortcut ) {
@@ -58,9 +58,11 @@ class ShortcutService extends BaseApplicationComponent
             $element = $options['element'];
             $url     = $element->getUrl();
 
-            $model->elementId = $element->id;
-            $model->url       = $url;
-            $model->urlHash   = $this->hashForUrl($url);
+            $model->elementId   = $element->id;
+            $model->elementType = $element->getElementType();
+            $model->locale      = $element->locale;
+            $model->url         = $url;
+            $model->urlHash     = $this->hashForUrl($url);
         }
 
         if ( isset($options['url']) ) {
@@ -109,9 +111,9 @@ class ShortcutService extends BaseApplicationComponent
         return null;
     }
 
-    public function getByElementId ($id = null)
+    public function getByElementId ($id = null, $locale = null)
     {
-        $record = ShortcutRecord::model()->findByAttributes([ 'elementId' => $id ]);
+        $record = ShortcutRecord::model()->findByAttributes([ 'elementId' => $id, 'locale' => $locale ]);
 
         if ( $record ) {
             return ShortcutModel::populateModel($record->getAttributes());
@@ -144,11 +146,13 @@ class ShortcutService extends BaseApplicationComponent
                 $record = new ShortcutRecord();
             }
 
-            $record->url       = $shortcut->url;
-            $record->urlHash   = $shortcut->urlHash;
-            $record->code      = $shortcut->code;
-            $record->hits      = $shortcut->hits;
-            $record->elementId = $shortcut->elementId;
+            $record->url         = $shortcut->url;
+            $record->urlHash     = $shortcut->urlHash;
+            $record->code        = $shortcut->code;
+            $record->locale      = $shortcut->locale;
+            $record->hits        = $shortcut->hits;
+            $record->elementId   = $shortcut->elementId;
+            $record->elementType = $shortcut->elementType;
 
 
             if ( $record->save() && empty($record->code) ) {
@@ -172,6 +176,21 @@ class ShortcutService extends BaseApplicationComponent
     public function hashForUrl ($url = null)
     {
         return md5($url);
+    }
+
+    public function onSaveElement (BaseElementModel $element)
+    {
+        $shortcut = $this->getByElementId($element->id);
+
+        if ( $shortcut ) {
+            // Check if we should update the url
+
+            if ( $element->getUrl() !== $shortcut->url ) {
+                $shortcut->url = $element->getUrl();
+
+                $this->saveShortcut($shortcut);
+            }
+        }
     }
 
 }

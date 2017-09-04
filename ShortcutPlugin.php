@@ -21,6 +21,12 @@ class ShortcutPlugin extends BasePlugin
     public function init ()
     {
         parent::init();
+
+        craft()->on('elements.onSaveElement', function (Event $event) {
+            if ( !$event->params['isNewElement'] ) {
+                craft()->shortcut->onSaveElement($event->params['element']);
+            }
+        });
     }
 
     /**
@@ -68,7 +74,7 @@ class ShortcutPlugin extends BasePlugin
      */
     public function getSchemaVersion ()
     {
-        return '1.0.0';
+        return '1.0.2';
     }
 
     /**
@@ -97,9 +103,12 @@ class ShortcutPlugin extends BasePlugin
 
     public function registerSiteRoutes ()
     {
+        $urlSegment = craft()->config->get('urlSegment', 'shortcut') ?: 's';
+
+
         return [
             // (?P<indexId>\w+)
-            's/(?P<code>\w+)' => [ 'action' => 'shortcut/get' ]
+            $urlSegment . '/(?P<code>\w+)' => [ 'action' => 'shortcut/get' ]
         ];
     }
 }
