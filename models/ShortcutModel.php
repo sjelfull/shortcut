@@ -34,7 +34,12 @@ class ShortcutModel extends BaseModel
 
     public function getUrl ()
     {
-        $urlSegment = craft()->config->get('hideUrlSegment', 'shortcut') ? '' : (craft()->config->get('urlSegment', 'shortcut') ?: 's');
+        $urlSegment   = craft()->config->get('hideUrlSegment', 'shortcut') ? '' : (craft()->config->get('urlSegment', 'shortcut') ?: 's');
+        $customDomain = craft()->config->get('customDomain', 'shortcut');
+
+        if ( !empty($customDomain) ) {
+            return rtrim($customDomain, '/') . '/' . $this->code;
+        }
 
         return UrlHelper::getSiteUrl($urlSegment . '/' . $this->getAttribute('code'));
     }
