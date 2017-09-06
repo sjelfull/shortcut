@@ -27,6 +27,29 @@ class ShortcutPlugin extends BasePlugin
                 craft()->shortcut->onSaveElement($event->params['element']);
             }
         });
+
+        if ( craft()->config->get('hideUrlSegment', 'shortcut') ) {
+            craft()->onException = function (\CExceptionEvent $event) {
+                if ( (($event->exception instanceof \CHttpException) && ($event->exception->statusCode == 404)) ||
+                    (($event->exception->getPrevious() instanceof \CHttpException) && ($event->exception->getPrevious()->statusCode == 404))
+                ) {
+                    ShortcutPlugin::log('A 404 exception occurred', LogLevel::Info, false);
+
+                    if ( craft()->request->isSiteRequest() && !craft()->request->isLivePreview() ) {
+                        // See if we should redirect
+                        $code     = craft()->request->getSegment(1);
+                        $shortcut = craft()->shortcut->getByCode($code);
+
+                        if ( $shortcut ) {
+                            ShortcutPlugin::log(Craft::t('Found matching shortcut {code}, redirecting to {url}', [ 'code' => $code, 'url' => $shortcut->getRealUrl() ]), LogLevel::Info, false);
+
+                            craft()->shortcut->increaseHits($shortcut);
+                            craft()->request->redirect($shortcut->getRealUrl());
+                        }
+                    }
+                }
+            };
+        }
     }
 
     /**
