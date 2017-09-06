@@ -32,4 +32,34 @@ To create a short url for a url:
 {{ shortcut.getUrl() }}
 ```
 
+By default, short urls is in the format `xxxx.tld/s/aBC123`. If you want to change the url segment from `s` to something custom, you can add a config file called shortcut.php in craft/config to override it:
+
+```php
+<?php
+return [
+    // Override Shortcut URL segment
+    'urlSegment' => 'x',
+];
+```
+
+If you want to remove the url segment completely and get urls like `xxxx.tld/aBC123`, you can enable the `hideUrlSegment` option.
+
+```php
+<?php
+return [
+    // Hide url segment
+    'hideUrlSegment' => true,
+];
+```
+
+To use a custom domain, add the domain with the `customDomain` option.
+
+```php
+<?php
+return [
+    // Set custom domain
+    'customDomain' => 'https://cool.domain',
+];
+```
+
 Brought to you by [Superbig](https://superbig.co)
